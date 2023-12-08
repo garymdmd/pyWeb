@@ -6,7 +6,7 @@ from flask import session, url_for, redirect
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
-CLIENT_SECRETS_FILE = "client_secret.json"
+CLIENT_SECRETS_FILE = "client_secret_247911754370-mavihk86ul34h1nch20dumjrn1r7s43a.apps.googleusercontent.com.json"
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 app = Flask(__name__)
@@ -44,10 +44,6 @@ def upload_calendar():
             return redirect(url_for('upload_calendar'))
     return render_template('upload.html')
 
-
-# Add the path to your downloaded credentials JSON file
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
-CLIENT_SECRETS_FILE = "path/to/client_secret.json"
 
 @app.route('/authorize')
 def authorize():
