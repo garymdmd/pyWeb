@@ -14,6 +14,11 @@
         <input type="file" name="excel_file">
         <input type="submit" value="Upload Excel File">
     </form>
+    <!-- Add this button to your upload.html after the file upload form -->
+    <form action="{{ url_for('upload_gcal') }}" method="post">
+    <input type="submit" value="Upload to GCal" id="upload_gcal" />
+    </form>
+
     <!-- Add additional buttons and elements as needed -->
 </body>
 </html>

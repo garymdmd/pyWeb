@@ -2,7 +2,11 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 import os
 from werkzeug.utils import secure_filename
 from google_auth_oauthlib.flow import Flow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 from flask import session, url_for, redirect
+import pandas as pd
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
@@ -38,6 +42,8 @@ def upload_calendar():
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
+            # Now you store the filepath in the session
+            session['uploaded_file_path'] = filepath
             # Add logic to process the file and interact with Google Calendar here
             flash('File successfully uploaded and processed')
             # Redirect or process the file as needed
@@ -71,21 +77,90 @@ def oauth2callback():
         CLIENT_SECRETS_FILE,
         scopes=['https://www.googleapis.com/auth/calendar'],
         state=state,
-        redirect_uri=url_for('oauth2callback', _external=True))
+        redirect_uri=url_for('oauth2callback', _external=True)
+    )
 
+    # Use the authorization server's response to fetch the OAuth 2.0 tokens
     flow.fetch_token(authorization_response=request.url)
 
-    if not flow.credentials.is_valid():
-        return 'Failed to fetch credentials', 401
+    # # Check if the credentials are valid
+    # if flow.credentials and flow.credentials.expired and flow.credentials.refresh_token:
+    #     flow.credentials.refresh(Request())
+    # else:
+    #     # Credentials could not be refreshed, possibly handle this better in production
+    #     return 'Failed to refresh credentials', 401
 
     # Store the credentials in the session.
-    # ACTION ITEM: In a production app, you likely want to save these
-    # credentials in a persistent database instead.
-    session['credentials'] = flow.credentials
+    # In production, you should securely store the credentials in a database.
+    session['credentials'] = {
+        'token': flow.credentials.token,
+        'refresh_token': flow.credentials.refresh_token,
+        'token_uri': flow.credentials.token_uri,
+        'client_id': flow.credentials.client_id,
+        'client_secret': flow.credentials.client_secret,
+        'scopes': flow.credentials.scopes
+    }
 
     return redirect(url_for('upload_calendar'))
 
-# You will need to define the route that triggers the 'authorize' method.
+
+@app.route('/upload_gcal', methods=['POST'])
+def upload_gcal():
+    # Assuming the file has already been saved to a known location and filename
+    filepath = session.get('uploaded_file_path')  # You'd set this during the file upload
+
+    # Read the Excel file
+    df = pd.read_excel(filepath, parse_dates=['date'])
+
+    # Create a list to hold events
+    events = []
+    for index, row in df.iterrows():
+        if not pd.isna(row['day']):  # Check if there's an entry for the day shift
+            events.append({
+                'summary': row['day'],
+                'date': row['date'].strftime('%Y-%m-%d'),  # Format date for all-day event
+                'calendar': 'Day'
+            })
+        if not pd.isna(row['night']):  # Check if there's an entry for the night shift
+            events.append({
+                'summary': row['night'],
+                'date': row['date'].strftime('%Y-%m-%d'),  # Format date for all-day event
+                'calendar': 'Night'
+            })
+
+    # Load credentials from the session
+    credentials = Credentials(**session['credentials'])
+
+    # Build the service object
+    service = build('calendar', 'v3', credentials=credentials)
+
+    # The IDs for your 'Day' and 'Night' calendars
+    day_calendar_id = 'your_day_calendar_id@group.calendar.google.com'
+    night_calendar_id = 'your_night_calendar_id@group.calendar.google.com'
+
+    # Now, create events in the respective calendars
+    for event in events:
+        event_body = {
+            'summary': event['summary'],
+            'start': {'date': event['date']},
+            'end': {'date': event['date']},
+        }
+        
+        calendar_id = day_calendar_id if event['calendar'] == 'Day' else night_calendar_id
+        
+        # Call the Calendar API to insert the event
+        try:
+            event_result = service.events().insert(calendarId=calendar_id, body=event_body).execute()
+            print(f"Created event id: {event_result.get('id')}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            flash('An error occurred while uploading the events.')
+            return redirect(url_for('upload_calendar'))
+
+    flash('Events successfully uploaded to Google Calendar')
+    return redirect(url_for('upload_calendar'))
+
+
 
 
 # Include other routes and functions as necessary
