@@ -116,17 +116,17 @@ def upload_gcal():
     # Create a list to hold events
     events = []
     for index, row in df.iterrows():
-        if not pd.isna(row['day']):  # Check if there's an entry for the day shift
-            events.append({
-                'summary': row['day'],
-                'date': row['date'].strftime('%Y-%m-%d'),  # Format date for all-day event
-                'calendar': 'Day'
-            })
-        if not pd.isna(row['night']):  # Check if there's an entry for the night shift
+        if not pd.isna(row['night']):  # Check if there's an entry for the day shift
             events.append({
                 'summary': row['night'],
                 'date': row['date'].strftime('%Y-%m-%d'),  # Format date for all-day event
                 'calendar': 'Night'
+            })
+        if not pd.isna(row['day']):  # Check if there's an entry for the night shift
+            events.append({
+                'summary': row['day'],
+                'date': row['date'].strftime('%Y-%m-%d'),  # Format date for all-day event
+                'calendar': 'Day'
             })
 
     # Load credentials from the session
@@ -161,12 +161,28 @@ def upload_gcal():
     flash('Events successfully uploaded to Google Calendar')
     return redirect(url_for('upload_calendar'))
 
+
 @app.route('/logout')
 def logout():
+    # Retrieve the path of the uploaded file from the session
+    uploaded_file_path = session.get('uploaded_file_path')
+    
+    # Check if the file path exists in the session
+    if uploaded_file_path:
+        try:
+            # Remove the file using the os module
+            os.remove(uploaded_file_path)
+            flash('Uploaded file has been deleted.')
+        except OSError as e:
+            # The file might not exist or other error occurred during deletion
+            flash('Error deleting the uploaded file - file is not there.')
+            print(e)
+    
     # Clear all data stored in session
     session.clear()
     flash('You have been logged out.')
     return redirect(url_for('index'))
+
 
 
 # Include other routes and functions as necessary
