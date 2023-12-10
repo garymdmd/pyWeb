@@ -26,6 +26,7 @@ def allowed_file(filename):
 def index():
     return render_template('index.html')
 
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_calendar():
     if request.method == 'POST':
@@ -34,22 +35,39 @@ def upload_calendar():
             flash('No file part')
             return redirect(request.url)
         file = request.files['excel_file']
+        
         # If the user does not select a file, the browser submits an
         # empty file without a filename.
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
+        
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            upload_folder = os.path.join(app.root_path, 'uploads')
+            
+            # Ensure the upload_folder exists
+            if not os.path.exists(upload_folder):
+                os.makedirs(upload_folder)
+            
+            filepath = os.path.join(upload_folder, filename)
+            
+            # Save the file to the uploads folder
             file.save(filepath)
+            
             # Now you store the filepath in the session
             session['uploaded_file_path'] = filepath
+            
             # Add logic to process the file and interact with Google Calendar here
             flash('File successfully uploaded and processed')
+            
             # Redirect or process the file as needed
             return redirect(url_for('upload_calendar'))
+    
+    # If it's not a POST request, or if no file was selected,
+    # render the upload page template
     return render_template('upload.html')
+
 
 
 @app.route('/authorize')
