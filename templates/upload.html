@@ -18,6 +18,8 @@
     <form action="{{ url_for('upload_gcal') }}" method="post">
     <input type="submit" value="Upload to GCal" id="upload_gcal" />
     </form>
+    <!-- Add this button for logout and clsoe session -->
+    <button id="logout_button" onclick="window.location.href='{{ url_for('logout') }}'">LOGOUT</button>
 
     <!-- Add additional buttons and elements as needed -->
 </body>

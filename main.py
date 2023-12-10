@@ -7,6 +7,7 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from flask import session, url_for, redirect
 import pandas as pd
+from flask import session, redirect, url_for, flash
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
@@ -135,8 +136,8 @@ def upload_gcal():
     service = build('calendar', 'v3', credentials=credentials)
 
     # The IDs for your 'Day' and 'Night' calendars
-    day_calendar_id = 'your_day_calendar_id@group.calendar.google.com'
-    night_calendar_id = 'your_night_calendar_id@group.calendar.google.com'
+    day_calendar_id = 'b500267a84a2e8915deac8e5b0f85bb76847fafbf1e13020a02b7d66ecb18e1a@group.calendar.google.com'
+    night_calendar_id = '568afc0b9664cf0267a26033f9b7a73755bc595e5d1df318425f436eddc00080@group.calendar.google.com'
 
     # Now, create events in the respective calendars
     for event in events:
@@ -160,7 +161,12 @@ def upload_gcal():
     flash('Events successfully uploaded to Google Calendar')
     return redirect(url_for('upload_calendar'))
 
-
+@app.route('/logout')
+def logout():
+    # Clear all data stored in session
+    session.clear()
+    flash('You have been logged out.')
+    return redirect(url_for('index'))
 
 
 # Include other routes and functions as necessary
