@@ -11,7 +11,7 @@ from flask import session, redirect, url_for, flash
 
 # Configure the OAuth flow
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # ONLY for development!
-CLIENT_SECRETS_FILE = "client_secret_247911754370-mavihk86ul34h1nch20dumjrn1r7s43a.apps.googleusercontent.com.json"
+CLIENT_SECRETS_FILE = "client_secret_247911754370-9gb3keue4tu2n7b29harrorfs7hosqjb.apps.googleusercontent.com.json"
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 app = Flask(__name__)
