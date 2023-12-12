@@ -1,0 +1,15 @@
+/* For index.html */
+.index-body {
+    background-image: url('images/landing_tech.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+/* For upload.html */
+.upload-body {
+    background-image: url('images/upload_bkg.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
