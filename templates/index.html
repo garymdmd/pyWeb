@@ -5,6 +5,9 @@
     <title>Landing Page</title>
 </head>
 <body>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <body class="index-body">
+
     <h1>Welcome to the Calendar Sync Application</h1>
    
     <a href="{{ url_for('upload_calendar') }}"><button>Go to Calendar Upload</button></a>
