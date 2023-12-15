@@ -21,3 +21,11 @@
 .upload-body h1 {
     color: #00FF00; /* This is a bright green color in hex */
 }
+.index-body, .upload-body {
+    min-height: 100vh; /* vh is the viewport height */
+    /* Your existing styles */
+}
+.index-body, .upload-body {
+    background-attachment: fixed;
+    /* Your existing styles */
+}
